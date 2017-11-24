@@ -1,0 +1,14 @@
+
+This is a direct mapped cache.
+
+Cache size is 256 bytes
+Line size is 8 bytes
+RAM size is 2^16 or 64KB
+
+During a read, program prints out the data at the location, whether a hit or miss, then the dirty bit.
+
+Provide either test-file.txt or dmtest300.txt in the argument when running the program. Then compare with the results in dmtest-file-out.txt or dmtest300-out.txt
+The output file of the program will always be dm-out.txt
+
+If running the program in Xcode, all you need to do is copy the test-file.txt into the compiled product folder in Finder. The argument for running the program is already set in the scheme.
+If you want to test using the dmtest300.txt file, copy it into the compiled product folder in Finder. Also, edit the scheme to pass the correct argument on launch.
