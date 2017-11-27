@@ -9,6 +9,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <sstream>
 
 using namespace std;
 
@@ -17,11 +18,11 @@ enum Operation { Read = 0x00, Write = 0xFF};
 
 class CacheLine
 {
-    int cacheLine[8] = { 0 };
+    int cacheLine[8];
 
 public:
-    bool dirty = 0;
-    int tag = 0;
+    bool dirty;
+    int tag;
 
     Hit tryToWriteDataToOffsetWithTag(int data, int offset, int newTag, int evictedData[10]) // evictedData stores the old tag in the second to last position
     {
@@ -76,14 +77,24 @@ struct InputInfo
 {
     InputInfo(string strAddress, string strOperation, string strData)
     {
-        int address = stoi(strAddress, nullptr, 16);
+        int address;
+        stringstream ss;
+        ss << hex << strAddress;
+        ss >> address;
 
         tag = (address & 0xFF00) >> 8; // isolate tag and shift right 8 bits
         lineNumber = (address & 0x00F8) >> 3;
         offset = address & 0x0007;
 
-        operation = stoi(strOperation, nullptr, 16) != 0 ? Write : Read;
-        data = stoi(strData, nullptr, 16);
+        int op;
+        stringstream ss2;
+        ss2 << hex << strOperation;
+        ss2 >> op;
+        if (op != 0) operation = Write; else operation = Read;
+
+        stringstream ss3;
+        ss3 << hex << strData;
+        ss3 >> data;
     }
 
     int tag;
@@ -107,7 +118,7 @@ int main(int argc, char **argv)
     fileName = argv[1];
 
     ifstream inputFile;
-    inputFile.open(fileName);
+    inputFile.open(fileName.c_str());
 
     ofstream outputFile;
     outputFile.open("dm-out.txt");
