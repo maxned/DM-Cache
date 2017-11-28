@@ -24,6 +24,15 @@ public:
     bool dirty;
     int tag;
 
+    CacheLine()
+    {
+        dirty = true;
+        tag = 0;
+
+        for (int i = 0; i < 8; i++)
+            cacheLine[i] = 0;
+    }
+
     Hit tryToWriteDataToOffsetWithTag(int data, int offset, int newTag, int evictedData[10]) // evictedData stores the old tag in the second to last position
     {
         dirty = true;
@@ -75,26 +84,15 @@ public:
 
 struct InputInfo
 {
-    InputInfo(string strAddress, string strOperation, string strData)
+    InputInfo(int inAddress, int inOperation, int inData)
     {
-        int address;
-        stringstream ss;
-        ss << hex << strAddress;
-        ss >> address;
+        tag = (inAddress & 0xFF00) >> 8; // isolate tag and shift right 8 bits
+        lineNumber = (inAddress & 0x00F8) >> 3;
+        offset = inAddress & 0x0007;
 
-        tag = (address & 0xFF00) >> 8; // isolate tag and shift right 8 bits
-        lineNumber = (address & 0x00F8) >> 3;
-        offset = address & 0x0007;
+        if (inOperation != 0) operation = Write; else operation = Read;
 
-        int op;
-        stringstream ss2;
-        ss2 << hex << strOperation;
-        ss2 >> op;
-        if (op != 0) operation = Write; else operation = Read;
-
-        stringstream ss3;
-        ss3 << hex << strData;
-        ss3 >> data;
+        data = inData;
     }
 
     int tag;
@@ -119,11 +117,12 @@ int main(int argc, char **argv)
 
     ifstream inputFile;
     inputFile.open(fileName.c_str());
+    inputFile >> hex;
 
     ofstream outputFile;
     outputFile.open("dm-out.txt");
 
-    string address, operation, data;
+    int address, operation, data;
     while (inputFile >> address && inputFile >> operation && inputFile >> data)
     {
         InputInfo inputInfo = InputInfo(address, operation, data);
